@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { CalendarDays, CheckCircle2, MapPin, PawPrint } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 
 const eventTypes = [
   "Pet meetup",
@@ -14,9 +15,38 @@ const eventTypes = [
 export default function CreateEventPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setIsSubmitted(true);
+
+    const form = e.currentTarget;
+
+    const formData = new FormData(form);
+
+    const createEvents = Object.fromEntries(formData.entries());
+
+    const result = await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_BASE_URL}/events`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(createEvents),
+      },
+    );
+    const data = await result.json();
+    console.log(data);
+    console.log(result);
+
+    if (data.acknowledged) {
+      toast.add({
+        title: " added successfully",
+        description: "Your facility has been added to the platform.",
+        type: "success",
+       
+      });;
+    }
   }
 
   return (
@@ -33,8 +63,8 @@ export default function CreateEventPage() {
             Create an event
           </h1>
           <p className="mx-auto mt-3 max-w-xl text-[#6b7280]">
-            Bring pet lovers together and create a memorable experience for
-            your community.
+            Bring pet lovers together and create a memorable experience for your
+            community.
           </p>
         </div>
 
@@ -180,6 +210,7 @@ export default function CreateEventPage() {
                     type="url"
                     placeholder="https://example.com/event.jpg"
                     className="h-11 w-full rounded-xl border border-stone-200 bg-[#fffdf9] px-3.5 text-sm text-[#293241] outline-none transition placeholder:text-stone-400 focus:border-[#f27d52] focus:ring-3 focus:ring-orange-100"
+                    required
                   />
                 </div>
               </div>
